@@ -12,12 +12,15 @@ using namespace sf;
 class paddle
 {
 public:
-	paddle(Vector2f size, int WIDTH, int HEIGHT, int side, Vector2f vel);
+	paddle(Vector2f size, int WIDTH, int HEIGHT, int side, Vector2f vel, Texture &tex);
 	~paddle();
 	RectangleShape getPaddle();
 	int SetVel(Vector2f newVel);
 	int UpdatePosition(float dt, int dir);
 	int reset();
+	int reset(Vector2f size, Vector2f vel);
+	int powerUp(int type);
+	Vector2f getSize();
 
 private:
 	RectangleShape rect;

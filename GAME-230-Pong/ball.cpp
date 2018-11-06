@@ -1,15 +1,27 @@
 #include "ball.h"
 
-ball::ball(float radius, int WIDTH, int HEIGHT,int initVel)
+ball::ball(float radius, int WIDTH, int HEIGHT,int initVel, int type, Texture &tex)
 {
-	ballShape.setRadius(radius);
-	ballShape.setOrigin(radius, radius);
-	ballShape.setFillColor(Color::Red);
-	ballShape.setPosition(WIDTH / 2, HEIGHT / 2);
-	this->initVel = initVel;
-	vel = Vector2f(initVel,0);
 	this->WIDTH = WIDTH;
 	this->HEIGHT = HEIGHT;
+	this->type = type;
+	ballShape.setTexture(&tex);
+	ballShape.setRadius(radius);
+	ballShape.setOrigin(radius, radius);
+	if (type == -1) {
+		ballShape.setPosition(WIDTH / 2, HEIGHT / 2);
+		//ballShape.setFillColor(Color::Red);
+	}else {
+		ballShape.setPosition((rand() % (WIDTH - 400)) + 200, (rand() % (HEIGHT - 100)) + 50);
+		if (type == 0) {
+			ballShape.setFillColor(Color::Green);
+		}
+		if (type == 1) {
+			ballShape.setFillColor(Color::Yellow);
+		}
+	}
+	this->initVel = initVel;
+	vel = Vector2f(initVel,0);
 }
 
 ball::~ball()
@@ -36,13 +48,30 @@ Vector2f ball::getVel() {
 	return vel;
 }
 
+int ball::getType() {
+	return type;
+}
+
 int ball::reset(int turn) {
-	ballShape.setPosition(WIDTH / 2, HEIGHT / 2);
-	if (turn % 2 == 0) {
-		vel = Vector2f(initVel, 0);
+	if (type == -1) {
+		ballShape.setPosition(WIDTH / 2, HEIGHT / 2);
+		if (turn % 2 == 0) {
+			vel = Vector2f(initVel, 0);
+		}
+		else {
+			vel = Vector2f(-initVel, 0);
+		}
 	}
 	else {
-		vel = Vector2f(-initVel, 0);
+		ballShape.setPosition((rand() % (WIDTH - 400)) + 200, (rand() % (HEIGHT - 100)) + 50);
+		type = rand() % 2;
+		if (type == 0) {
+			ballShape.setFillColor(Color::Green);
+		}
+		if (type == 1) {
+			ballShape.setFillColor(Color::Yellow);
+		}
 	}
+	
 	return 0;
 }
