@@ -77,10 +77,10 @@ int paddle::powerUp(int type) {
 	switch (type)
 	{
 	case 0:
-		rect.setSize(Vector2f(rect.getSize().x, rect.getSize().y + 20));
+		rect.setSize(Vector2f(rect.getSize().x, rect.getSize().y + 40));
 		break;
 	case 1:
-		vel.y += 20;
+		vel.y -= 80;
 		break;
 	}
 	return 0;

@@ -19,17 +19,20 @@ int initVel = 500;
 int tempVel;
 int augPerHit = 25;
 float radius = 20;
-Vector2f paddleSize = Vector2f(20, 120);
+Vector2f paddleSize = Vector2f(30, 120);
 Vector2f paddleVel = Vector2f(0, -250);
 Font font;
 Texture ballTex;
 Texture paddleTex;
 Texture obstacleTex;
 Texture backTex;
+Sprite background;
 SoundBuffer buf;
 Sound sound;
 SoundBuffer sBuf;
 Sound sSound;
+SoundBuffer pBuf;
+Sound pSound;
 int lScore;
 int rScore;
 Text lScoreText;
@@ -78,6 +81,8 @@ int main()
 	int temp = 0;
 	RectangleShape currentChoiceRect;
 	currentIndex = 0;
+	Vector2u TextureSize; 
+	Vector2u WindowSize;
 	currentChoiceRect.setSize(Vector2f(30, 30));
 	currentChoiceRect.setFillColor(Color::Red);
 
@@ -90,10 +95,26 @@ int main()
 	sound.setBuffer(buf);
 	sBuf.loadFromFile("score.wav");
 	sSound.setBuffer(sBuf);
+	pBuf.loadFromFile("powerup.wav");
+	pSound.setBuffer(pBuf);
+
+	if (!backTex.loadFromFile("background.jpg"))
+	{
+		return -1;
+	}
+	else
+	{
+		TextureSize = backTex.getSize(); //Get size of texture.
+		WindowSize = window.getSize();             //Get size of window.
+		float ScaleX = (float)WindowSize.x / TextureSize.x;
+		float ScaleY = (float)WindowSize.y / TextureSize.y;     //Calculate scale.
+		background.setTexture(backTex);
+		background.setScale(ScaleX, ScaleY);      //Set scale.  
+	}
 
 	ball newBall = ball(radius, WIDTH, HEIGHT, initVel,-1,ballTex);
 	int type = rand() % 2;
-	ball powerBall = ball(radius + 10, WIDTH, HEIGHT, 0, type,ballTex);
+	ball powerBall = ball(radius + 15, WIDTH, HEIGHT, 0, type,ballTex);
 	paddle lPaddle = paddle(paddleSize, WIDTH, HEIGHT, -1,paddleVel,paddleTex);
 	paddle rPaddle = paddle(paddleSize, WIDTH, HEIGHT, 1,paddleVel, paddleTex);
 	paddle obstacle = paddle(paddleSize, WIDTH, HEIGHT, 0, Vector2f(0, 200), obstacleTex);
@@ -238,9 +259,39 @@ int update_state(float dt, ball &newBall, paddle &lPaddle, paddle &rPaddle, padd
 	Vector2f temp;
 	float len;
 	int kick = 0;
-	if (lScore == 5 || rScore == 5) {
-		
-		return 1;
+	static int flag = 0;
+	//score
+	if (bp.x <= 0) {
+		if (flag == 0) {
+			rScore++;
+			rScoreText.setString(std::to_string(rScore));
+			sSound.play();
+			flag = 1;
+		}
+		if (sSound.getStatus() != SoundSource::Playing && flag == 1) {
+			flag = 0;
+			reset(newBall, lPaddle, rPaddle, obstacle, powerBall);
+			if (lScore == 5 || rScore == 5) {
+				return 1;
+			}
+		}
+		return 0;
+	}
+	if (bp.x >= WIDTH) {
+		if (flag == 0) {
+			lScore++;
+			lScoreText.setString(std::to_string(lScore));
+			sSound.play();
+			flag = 1;
+		}
+		if (sSound.getStatus() != SoundSource::Playing && flag == 1) {
+			flag = 0;
+			reset(newBall, lPaddle, rPaddle, obstacle, powerBall);
+			if (lScore == 5 || rScore == 5) {
+				return 1;
+			}
+		}
+		return 0;
 	}
 	//collision
 	//lp
@@ -348,7 +399,8 @@ int update_state(float dt, ball &newBall, paddle &lPaddle, paddle &rPaddle, padd
 	}
 	//PowerUps Mode
 	if (gameMode == POWERUPS) {
-		if (length(bp - pp) <= radius + 10) {
+		if (length(bp - pp) <= radius + 15) {
+			pSound.play();
 			if (kicker == -1) {
 				lPaddle.powerUp(powerBall.getType());
 			}
@@ -363,27 +415,14 @@ int update_state(float dt, ball &newBall, paddle &lPaddle, paddle &rPaddle, padd
 		kick = 0;
 	}
 	newBall.UpdatePosition(dt);
-	//score
-	if (bp.x <= 0) {
-		rScore++;
-		rScoreText.setString(std::to_string(rScore));
-		reset(newBall, lPaddle, rPaddle, obstacle,powerBall);
-		if (sSound.getStatus() != SoundSource::Playing)
-			sSound.play();
-	}
-	if (bp.x >= WIDTH) {
-		lScore++;
-		lScoreText.setString(std::to_string(lScore));
-		reset(newBall, lPaddle, rPaddle, obstacle,powerBall);
-		if (sSound.getStatus() != SoundSource::Playing)
-			sSound.play();
-	}
+	
 	return 0;
 }
 
 void render_frame(ball &newBall, paddle &lPaddle, paddle &rPaddle, paddle &obstacle, ball &powerBall)
 {
 	window.clear();
+	window.draw(background);
 	window.draw(lScoreText);
 	window.draw(rScoreText);
 	window.draw(newBall.getBall());
@@ -464,6 +503,7 @@ int updateMainMenu(Text mainMenuChioce[], RectangleShape &currentChoiceRect) {
 
 int renderMainMenuFrame(Text mainMenuChioce[], RectangleShape currentChoiceRect) {
 	window.clear();
+	window.draw(background);
 	window.draw(MainText);
 	for (int i = 0; i < EXIT + 1; i++) {
 		window.draw(mainMenuChioce[i]);
@@ -507,6 +547,7 @@ int updateEndInterface(Text endChioce[], RectangleShape &currentChoiceRect) {
 
 int renderEndInterfaceFrame(Text endChioce[], RectangleShape &currentChoiceRect) {
 	window.clear();
+	window.draw(background);
 	window.draw(MainText);
 	window.draw(lScoreText);
 	window.draw(rScoreText);
